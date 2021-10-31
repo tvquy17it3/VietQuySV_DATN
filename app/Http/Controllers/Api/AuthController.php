@@ -62,7 +62,6 @@ class AuthController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
-        dd($user);
-        return response()->json($request->user());
+        return response()->json($user);
     }
 }
