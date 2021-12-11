@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Validator;
 use App\Models\User;
+use App\Models\Employee;
 use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
@@ -30,17 +31,23 @@ class AuthController extends Controller
             }
 
             $user = User::where('email', $request->email)->first();
+            $employee_id = "";
+            if($user->employee != null){
+                $employee_id = $user->employee->id;
+            }
+
             $token =  $user->createToken($request->device_name)->plainTextToken;
             return response()->json([
                 'status_code' => 200,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
+                'employee_id' => $employee_id,
             ]);
         } catch (\Exception $error) {
             return response()->json([
                 'status_code' => 500,
                 'message' => 'Error in Login',
-                'error' => $error,
+                'error' => $error->getMessage(),
             ]);
         }
     }

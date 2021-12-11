@@ -18,9 +18,11 @@ class RolePositionDepartmentShiftSeeder extends Seeder
     public function run()
     {
         $admin = Role::create([
+            'slug' => 'admin',
             'name' => 'Admin',
         ]);
         $staff = Role::create([
+            'slug' => 'staff',
             'name' => 'Staff',
         ]);
 
@@ -42,12 +44,12 @@ class RolePositionDepartmentShiftSeeder extends Seeder
         ]);
 
         $morning = Shift::create([
-            'name' => 'Morning',
+            'name' => 'Sáng',
             'check_in' => '07:30:00',
             'check_out' => '11:30:00',
         ]);
         $afternoon = Shift::create([
-            'name' => 'Afternoon',
+            'name' => 'Chiều',
             'check_in' => '13:00:00',
             'check_out' => '17:00:00',
         ]);

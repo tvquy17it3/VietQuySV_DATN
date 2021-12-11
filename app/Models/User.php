@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -17,6 +18,7 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -58,4 +60,31 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function roles()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    public function isAdmin()
+    {
+        $role = $this->roles()->first();
+        return $role->slug == "admin" ? true : false;
+    }
+
+    public function scopeSearch($query, $term)
+    {
+        $term = "%$term%";
+        $query->whereHas('employee', function($query) use($term) {
+            $query->where('phone', 'like', $term);
+        })->orwhere(function ($query) use ($term) {
+            $query->where('name', 'like', $term)
+                  ->orWhere('email', 'like', $term);
+        });
+    }
 }

@@ -19,9 +19,12 @@ class CreateTimesheetsTable extends Migration
             $table->dateTime('check_out');
             $table->tinyInteger('hour')->default(0);
             $table->string('ip_address', 50)->nullable();
-            $table->string('mac_address', 50)->nullable();
+            $table->string('location', 50)->nullable();
             $table->foreignId('employee_id');
             $table->foreignId('shift_id');
+            $table->tinyInteger('status')->default(0);
+            $table->text('note')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');

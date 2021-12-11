@@ -25,6 +25,9 @@ class CreateUsersTable extends Migration
             $table->string('publickey')->nullable();
             $table->boolean('status_upload')->default(false);
             $table->foreignId('role_id')->default(2);
+            $table->string('provider_name')->nullable();
+            $table->string('provider_id')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');

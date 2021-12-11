@@ -18,6 +18,7 @@ class CreateShiftsTable extends Migration
             $table->string('name');
             $table->time('check_in');
             $table->time('check_out');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

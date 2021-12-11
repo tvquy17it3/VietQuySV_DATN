@@ -15,7 +15,7 @@ class CreateEmployeesTable extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->string('phone', 12)->nullable();
+            $table->string('phone', 20)->nullable();
             $table->string('address')->nullable();
             $table->enum('gender', ['F', 'M'])->nullable();
             $table->date('birth_date')->nullable();
@@ -24,7 +24,7 @@ class CreateEmployeesTable extends Migration
             $table->foreignId('user_id')->unique();
             $table->foreignId('position_id');
             $table->foreignId('department_id');
-
+            $table->softDeletes();
             $table->timestamps();
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
             $table->foreign('position_id')->references('id')->on('positions')->onDelete('cascade');
