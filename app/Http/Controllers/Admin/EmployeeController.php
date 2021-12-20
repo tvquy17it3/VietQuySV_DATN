@@ -56,6 +56,9 @@ class EmployeeController extends Controller
         $departments = Department::All();
         $positions = Position::All();
         $employee = Employee::with(['user'])->find($id);
+        if($employee ==null){
+            return redirect('/admin');
+        }
         return View('admin.employee.edit', ['employee' => $employee, 'departments' => $departments, 'positions' =>$positions]);
     }
 
@@ -66,5 +69,14 @@ class EmployeeController extends Controller
         $user->fill($name)->save();
         $rs =  $employee->fill($input)->save();
         return $rs ? back()->with('success', 'Cập nhật thành công!') : back()->withErrors('Đã có lỗi xãy ra!');
+    }
+
+    public function show_employee($employee)
+    {
+        $employee = Employee::with(['user', 'department', 'position'])->find($employee);
+        if($employee ==null){
+            return redirect('/admin');
+        }
+        return View('admin.employee.show', ['employee' => $employee]);
     }
 }

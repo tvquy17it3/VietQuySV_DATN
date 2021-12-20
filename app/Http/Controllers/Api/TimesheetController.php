@@ -30,7 +30,7 @@ class TimesheetController extends Controller
 
             $user = $request->user();
             $emp = $user->employee;
-            $ip = $request->ip_address;
+            $ip = \Request::ip();
 
             if($emp){
                 $dt = Carbon::now('Asia/Ho_Chi_Minh');
@@ -194,23 +194,4 @@ class TimesheetController extends Controller
         }
         return $location;
     }
-
-    public function getUserIpAddr(){
-        $ipaddress = '';
-        if (isset($_SERVER['HTTP_CLIENT_IP']))
-            $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
-        else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-            $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        else if(isset($_SERVER['HTTP_X_FORWARDED']))
-            $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
-        else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
-            $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
-        else if(isset($_SERVER['HTTP_FORWARDED']))
-            $ipaddress = $_SERVER['HTTP_FORWARDED'];
-        else if(isset($_SERVER['REMOTE_ADDR']))
-            $ipaddress = $_SERVER['REMOTE_ADDR'];
-        else
-            $ipaddress = 'UNKNOWN';
-        return $ipaddress;
-     }
 }

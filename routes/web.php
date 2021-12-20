@@ -29,13 +29,14 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
     Route::get('/new-employee', [EmployeeController::class,'create'])->name('admin.create-employee');
     Route::POST('/new-employee', [EmployeeController::class,'store'])->name('admin.store-employee');
 
+    Route::get('/employee_profile/{employee}', [EmployeeController::class,'show_employee'])->name('admin.employee-profile'); // employee view
+
     Route::get('/emp', [EmployeeController::class,'index'])->name('admin.index');
     Route::get('/accounts', [UserController::class,'index'])->name('admin.accounts');
 
     //timesheets
     Route::get('/timesheet', [TimesheetController::class,'index'])->name('admin.timesheets');
     Route::get('/timesheet/{id}', [TimesheetController::class,'show'])->name('admin.view-timesheets-detail');
-    Route::get('/timesheets-employee/{employee}', [TimesheetController::class,'show_timesheets_employee'])->name('admin.view-timesheet'); // employee view
 
     Route::get('/change_shifts', [TimesheetController::class,'change_shifts'])->name('admin.change-shifts');
     Route::POST('/change_shifts/{shift}', [TimesheetController::class,'update_shifts'])->name('admin.update_shifts');

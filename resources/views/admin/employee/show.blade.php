@@ -1,7 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Create Employee')
+@section('title', 'Xem hồ sơ')
 @section('css')
-<meta name="csrf_token" content="{{ csrf_token() }}" />
 <style>
   .title {
     text-align: center;
@@ -75,15 +74,13 @@
           <div class="clearfix"></div>
         </div>
         <div class="x_content">
-            {{ csrf_field() }}
-            <h1 class="title">Chi tiết thông tin</h1>
+            <h1 class="title">Thông tin</h1>
             <div class="media align-items-center py-3 mb-3">
-              <img src="{{ $timesheets->employee->user->profile_photo_url }}" alt="{{ $timesheets->employee->user->name }}" class="d-block ui-w-100 rounded-circle">
+              <img src="{{ $employee->user->profile_photo_url }}" alt="{{ $employee->user->name }}" class="d-block ui-w-100 rounded-circle">
               <div class="media-body ml-4">
-                <h4 class="font-weight-bold mb-0">{{ $timesheets->employee->user->name}}<br><span class="text-muted font-weight-normal">{{ $timesheets->employee->user->email}}</span></h4>
-                <div class="text-muted mb-2">ID: {{ $timesheets->employee->id}}</div>
-                <a href="{{route('admin.edit-employee',['id'=>$timesheets->employee->user->id])}}" class="btn btn-primary btn-sm">Sửa</a>&nbsp;
-                <a href="javascript:void(0)" class="btn btn-default btn-sm">Xem</a>&nbsp;
+                <h4 class="font-weight-bold mb-0">{{ $employee->user->name }}<span class="text-muted font-weight-normal"></span></h4>
+                <div class="text-muted mb-2">ID: {{ $employee->id }}</div>
+                <a href="{{ route('admin.edit-employee',['id'=>$employee->id]) }}" class="btn btn-primary btn-sm">Sửa</a>&nbsp;
               </div>
             </div>
 
@@ -92,57 +89,55 @@
                 <table class="table user-view-table m-0">
                   <tbody>
                     <tr>
-                      <td>Check In:</td>
-                      <td>{{ $timesheets->check_in}}</td>
+                      <td>Họ tên:</td>
+                      <td>{{ $employee->user->name }}</td>
                     </tr>
                     <tr>
-                      <td>Checkout</td>
-                      @if ($timesheets->status)
-                        <td>{{ $timesheets->check_out}}&nbsp;<span class="fa fa-check text-primary"></span></td>
-                      @else
-                        <td>
-                          <span class="help-block" style="color:red">
-                            Chưa check out
-                          </span>
-                        </td>
-                      @endif
+                      <td>Email:</td>
+                      <td>{{ $employee->user->email }}</td>
                     </tr>
                     <tr>
-                      <td>Số giờ</td>
-                      <td>{{ $timesheets->hour}} tiếng</td>
+                      <td>Điện thoại:</td>
+                      <td>{{ $employee->phone }}</td>
                     </tr>
                     <tr>
-                      <td>IP</td>
-                      <td>{{ $timesheets->ip_address}}</td>
+                      <td>Địa chỉ:</td>
+                      <td>{{ $employee->address }}</td>
                     </tr>
                     <tr>
-                      <td>Tọa độ:</td>
-                      <td>{{ $timesheets->location}}</td>
+                      <td>Giới tính:</td>
+                      <td>{{ $employee->gender == "M" ? "Nam" : "Nữ" }}</td>
                     </tr>
                     <tr>
-                      <td>Ghi chú</td>
-                      <td>
-                        <?php $notes = explode("&", $timesheets->note) ?>
-                        @foreach ($notes as $note)
-                        <p class="text-info">{{$note}}</p>
-                        @endforeach
-                      </td>
+                      <td>Ngày sinh:</td>
+                      <td>{{ $employee->birth_date }}</td>
+                    </tr>
+                    <tr>
+                      <td>Ngày vào:</td>
+                      <td>{{ $employee->from_date }}</td>
+                    </tr>
+                    <tr>
+                      <td>Phòng ban</td>
+                      <td>{{ $employee->department->name }}</td>
+                    </tr>
+                    <tr>
+                      <td>Vị trí</td>
+                      <td>{{ $employee->position->name }}</td>
+                    </tr>
+                    <tr>
+                      <td>Ngày tạo hồ hơ</td>
+                      <td>{{ $employee->created_at->format('Y-m-d') }}</td>
+                    </tr>
+                    <tr>
+                      <td>Cập nhật</td>
+                      <td>{{ $employee->updated_at->format('Y-m-d') }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <hr class="border-light m-0">
             </div>
-            <div class="row">
-              @foreach ($timesheets->images as $img)
-              <div class="card" style="width: 18rem;">
-                <img class="card-img-top" src="{{ $img->img }}" alt="Card image cap">
-                <div class="card-body">
-                  <p class="card-text">{{ $img->created_at }}</p>
-                </div>
-              </div>
-              @endforeach
-            </div>
+            @livewire('timesheets-employee', ['employee_id' => $employee->id])
           </div>
         </div>
       </div>
@@ -150,4 +145,3 @@
   </div>
 </div>
 @endsection
-<!-- https://www.bootdey.com/snippets/view/view-user-information#html -->

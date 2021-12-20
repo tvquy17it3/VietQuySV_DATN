@@ -58,13 +58,13 @@
               <div class="field item form-group">
                 <label class="col-form-label col-md-3 col-sm-3  label-align">Ca làm việc<span class="required"></span></label>
                 <div class="col-md-2 col-sm-2">
-                  <input class="form-control" type="text" name="name" value="{{ old('name', $values->name) }}">
+                  <input class="form-control" type="text" name="name" value="{{ $values->name }}" required='required'>
                 </div>
                 <div class="col-md-2 col-sm-2">
-                  <input class="form-control" class='date' type="time" name="check_in" required='required' value="{{ old('check_in', (\Carbon\Carbon::createFromFormat('H:i:s',$values->check_in)->format('h:i'))) }}">
+                  <input class="form-control" class='date' type="time" name="check_in" required='required' value="{{ \Carbon\Carbon::createFromFormat('H:i:s',$values->check_in)->format('H:i') }}">
                 </div>
                 <div class="col-md-2 col-sm-2">
-                  <input class="form-control" class='date' type="time" name="check_out" required='required' value="{{ old('check_out', (\Carbon\Carbon::createFromFormat('H:i:s',$values->check_out)->format('h:i'))) }}">
+                  <input class="form-control" class='date' type="time" name="check_out" required='required' value="{{ \Carbon\Carbon::createFromFormat('H:i:s',$values->check_out)->format('H:i') }}">
                 </div>
                 <div class="col-md-1 col-sm-1">
                   <button type='submit' class="btn btn-primary">Lưu</button>

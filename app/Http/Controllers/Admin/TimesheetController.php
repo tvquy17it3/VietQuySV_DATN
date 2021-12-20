@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Timesheet;
-use App\Models\Employee;
 use App\Models\Image;
 use App\Models\Shift;
 use App\Http\Requests\UpdateShiftsRequest;
@@ -26,14 +25,9 @@ class TimesheetController extends Controller
         return View('admin.timesheets.show', ['timesheets' => $timesheets]);
     }
 
-    public function show_timesheets_employee(Employee $employee)
-    {
-        dd($employee);
-    }
-
     public function change_shifts()
     {
-        $shifts = Shift::All();
+        $shifts = Shift::orderBy('check_in', 'ASC')->get();
         return View('admin.timesheets.change-shifts', ['shifts' =>$shifts]);
     }
 
