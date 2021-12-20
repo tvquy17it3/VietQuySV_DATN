@@ -27,5 +27,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/show', [AuthController::class,'show']);
     Route::post('/logout', [AuthController::class,'logout']);
 
+    Route::post('/savepublickey', [AuthController::class,'save_key']);
+    Route::post('/verify', [AuthController::class,'verify_key']);
+
     Route::post('/create-timesheets', [TimesheetController::class,'store']);
+    Route::get('/show_timesheets', [TimesheetController::class,'show']);
+    Route::get('/timesheet_today', [TimesheetController::class,'show_today']);
 });

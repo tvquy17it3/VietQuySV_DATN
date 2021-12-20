@@ -83,7 +83,7 @@
                 <h4 class="font-weight-bold mb-0">{{ $timesheets->employee->user->name}}<br><span class="text-muted font-weight-normal">{{ $timesheets->employee->user->email}}</span></h4>
                 <div class="text-muted mb-2">ID: {{ $timesheets->employee->id}}</div>
                 <a href="{{route('admin.edit-employee',['id'=>$timesheets->employee->user->id])}}" class="btn btn-primary btn-sm">Sửa</a>&nbsp;
-                <a href="javascript:void(0)" class="btn btn-default btn-sm">Xem</a>&nbsp;
+                <a href="{{ route('admin.employee-profile',['employee'=>$timesheets->employee->id]) }}" class="btn btn-default btn-sm">Xem</a>&nbsp;
               </div>
             </div>
 
@@ -138,7 +138,7 @@
               <div class="card" style="width: 18rem;">
                 <img class="card-img-top" src="{{ $img->img }}" alt="Card image cap">
                 <div class="card-body">
-                  <p class="card-text">{{ $img->created_at }}</p>
+                  <p class="card-text">{{ $img->created_at }}, {{ $img->confidence }}%</p>
                 </div>
               </div>
               @endforeach

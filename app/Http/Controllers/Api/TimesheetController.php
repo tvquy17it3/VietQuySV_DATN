@@ -10,6 +10,7 @@ use App\Models\Shift;
 use Carbon\Carbon;
 use App\Models\Image;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class TimesheetController extends Controller
 {
@@ -18,8 +19,9 @@ class TimesheetController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'shift_id' => 'required|integer',
-                'ip_address' => 'required|string',
                 'image' => 'required|string',
+                'confidence' => 'required|numeric|between:0,1000',
+                'ip_address' => 'required',
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -30,11 +32,12 @@ class TimesheetController extends Controller
 
             $user = $request->user();
             $emp = $user->employee;
-            $ip = \Request::ip();
+            $ip = $request->ip_address;
+            $confidence = $request->confidence;
 
             if($emp){
                 $dt = Carbon::now('Asia/Ho_Chi_Minh');
-                // $dt = Carbon::create(2021, 12, 19, 12, 40, 00);
+                //$dt = Carbon::create(2021, 12, 21, 12, 40, 00);
                 $check_exist = Timesheet::whereDate('check_in', '=', $dt->toDateString())
                 ->where('employee_id', $emp->id)->where('shift_id', $request->shift_id)->first();
                 if($check_exist){
@@ -42,20 +45,21 @@ class TimesheetController extends Controller
                     $check_out  = Carbon::create($dt->toDateTimeString());
                     $hours =  $check_out->diffInHours($check_in);
                     $note = $check_exist->note;
-
-                    $note_check_ip = $this->check_location($ip, $dt);
+                    $location = $this->check_location($ip);
+                    $note = $note. "&check out(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
                     DB::beginTransaction();
                     try {
                         $check_exist->update([
                             'status' => 1,
                             'check_out' => $dt->toDateTimeString(),
                             'hour' => $hours,
-                            'note' => $note.$note_check_ip,
+                            'note' => $note,
                         ]);
                         $check_exist->save();
                         $employee = Image::create([
                             'img' => $request->image,
                             'timesheet_id' => $check_exist->id,
+                            'confidence' =>$confidence,
                         ]);
 
                         DB::commit();
@@ -86,6 +90,8 @@ class TimesheetController extends Controller
 
                     if($check){
                         $note = $this->check_later($dt, $check_in, $check_in_add);
+                        $location = $this->check_location($ip);
+                        $note = $note. "&check in(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
                         DB::beginTransaction();
                         try {
                             $result = Timesheet::create([
@@ -94,7 +100,7 @@ class TimesheetController extends Controller
                                 'check_in' => $dt->toDateTimeString(),
                                 'check_out' => $dt->toDateTimeString(),
                                 'hour' => 0,
-                                'location' =>  $this->check_only_location($ip),
+                                'location' =>  $location['location'],
                                 'ip_address' => $ip,
                                 'note' => $note,
                             ]);
@@ -102,6 +108,7 @@ class TimesheetController extends Controller
                             $employee = Image::create([
                                 'img' => $request->image,
                                 'timesheet_id' => $result->id,
+                                'confidence' => $confidence,
                             ]);
 
 
@@ -170,28 +177,59 @@ class TimesheetController extends Controller
         return $note;
     }
 
-    public function check_location($ip, $dt)
+    public function check_location($ip)
     {
+        //$ip = "14.236.109.87";
         $note = "";
-        try {
-            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
-            $note = "&Check Out(". $dt. ", ip:".$ip. ", location: [".$details->loc."]). ";
-        } catch(\Exception $error) {
-            $note = "&Check Out(". $dt. ", Không tìm thấy tọa độ của ip: ".$ip. ". ";
-            return $note;
-        }
-        return $note;
-    }
-
-    public function check_only_location($ip)
-    {
         $location = "[]";
         try {
-            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
-            $location = "[".$details->loc."]";
+            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}?token=88cb82c6b0ea8d"));
+            $location = $details->loc;
+            $note = "IP: ".$details->ip." | City: ".$details->city.", ".$details->region.", loc: [".$details->loc."]";
         } catch(\Exception $error) {
-            return $location;
+            $note = "IP: ".$ip." | location not found";
         }
-        return $location;
+        return array('note' => $note, 'location' => $location);
+    }
+
+
+    public function show(Request $request)
+    {
+        $employee_id = $request->user()->employee->id;
+        $timesheets = Timesheet::with(['shifts'])->where('employee_id', $employee_id)->orderBy('check_in', 'DESC')->simplePaginate(6);
+        if($timesheets){
+            return response()->json([
+                'status_code' => 200,
+                'message' => "Lấy dữ liệu thành công!",
+                'data' => $timesheets,
+            ]);
+        }
+
+        return response()->json([
+            'status_code' => 200,
+            'message' => "Không có dữ liệu!",
+            'data' => [],
+        ]);
+    }
+
+    public function show_today(Request $request)
+    {
+        $employee_id = $request->user()->employee->id;
+        $dt = Carbon::now('Asia/Ho_Chi_Minh');
+        $now = $dt->toDateString();
+        $timesheets = Timesheet::with(['shifts'])->where('employee_id', $employee_id)->whereDate('check_in', $now)->orderBy('check_in', 'ASC')->get();
+        if($timesheets != null){
+            return response()->json([
+                'status_code' => 200,
+                'message' => "Lấy dữ liệu thành công!",
+                'data' => $timesheets,
+            ]);
+        }
+
+        return response()->json([
+            'status_code' => 401,
+            'message' => "Không có dữ liệu!",
+            'data' => [],
+        ]);
     }
 }

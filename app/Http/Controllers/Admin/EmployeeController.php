@@ -40,7 +40,7 @@ class EmployeeController extends Controller
             $employee = Employee::create($data_employee);
 
             DB::commit();
-            return redirect()->route('admin.edit-employee', $employee->id)->with('success', 'Đã thêm thành công!');
+            return redirect()->route('admin.employee-profile', $employee->id)->with('success', 'Đã thêm thành công!');
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -68,7 +68,11 @@ class EmployeeController extends Controller
         $input = $request->except('name','user_id');
         $user->fill($name)->save();
         $rs =  $employee->fill($input)->save();
-        return $rs ? back()->with('success', 'Cập nhật thành công!') : back()->withErrors('Đã có lỗi xãy ra!');
+
+        if($rs){
+            return redirect()->route('admin.employee-profile', $employee->id)->with('success', 'Cập nhật thành công!');
+        }
+        return back()->withErrors('Đã có lỗi xãy ra!');
     }
 
     public function show_employee($employee)
@@ -78,5 +82,10 @@ class EmployeeController extends Controller
             return redirect('/admin');
         }
         return View('admin.employee.show', ['employee' => $employee]);
+    }
+
+    public function training()
+    {
+        return View('admin.employee.training');
     }
 }

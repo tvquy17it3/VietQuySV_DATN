@@ -67,8 +67,8 @@ class ManagerTimesheets extends Component
     {
         $this->validate();
         $ip = $this->getUserIpAddr();
-        // $ip = trim(shell_exec("dig +short myip.opendns.com @resolver1.opendns.com"));
-        $location = $this->check_only_location($ip);
+        $location = $this->check_location($ip);
+        $note = "&Add(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
         $start = new Carbon($this->check_in);
         $end  = new Carbon($this->check_out);
         $hour =  $start->diffInHours($end);
@@ -78,9 +78,9 @@ class ManagerTimesheets extends Component
             'check_in' => $this->check_in,
             'check_out' => $this->check_out,
             'hour' => $hour,
-            'location' => $location,
+            'location' => $location['location'],
             'ip_address' => $ip,
-            'note' => $this->note."& Add(".now()." , ip: ".$ip.", by: ".Auth::user()->email.").",
+            'note' => $this->note."".$note,
             'status' => 1
         ]);
 
@@ -116,15 +116,15 @@ class ManagerTimesheets extends Component
         $end  = new Carbon($this->check_out);
         $hour =  $start->diffInHours($end);
         $ip = $this->getUserIpAddr();
-        $note = $find_timesheets->note;
+        $location = $this->check_location($ip);
+        $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
         $result = $find_timesheets->update([
             'shift_id' => $this->shift_id,
             'check_in' => $this->check_in,
             'check_out' => $this->check_out,
             'hour' => $hour,
-            'note' => $this->note,
             'status' => 1,
-            'note' => $note. "& Edit(".now()." , ip: ".$ip.", by: ".Auth::user()->email.").",
+            'note' => $note,
         ]);
 
         if ( $result == true ) {
@@ -154,16 +154,19 @@ class ManagerTimesheets extends Component
         }
     }
 
-    public function check_only_location($ip)
+    public function check_location($ip)
     {
+        //$ip = "14.236.109.87";
+        $note = "";
         $location = "[]";
         try {
-            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
-            $location = "[".$details->loc."]";
+            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}?token=88cb82c6b0ea8d"));
+            $location = $details->loc;
+            $note = "IP: ".$details->ip." | City: ".$details->city.", ".$details->region.", loc: [".$details->loc."]";
         } catch(\Exception $error) {
-            return $location;
+            $note = "IP: ".$ip." | location not found";
         }
-        return $location;
+        return array('note' => $note, 'location' => $location);
     }
 
     public function getUserIpAddr(){

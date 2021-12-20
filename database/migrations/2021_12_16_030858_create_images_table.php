@@ -16,9 +16,9 @@ class CreateImagesTable extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->longText('img');
+            $table->decimal('confidence', 5, 2)->default(0);
             $table->foreignId('timesheet_id');
             $table->timestamps();
-
             $table->foreign('timesheet_id')->references('id')->on('timesheets')->onDelete('cascade');
         });
     }

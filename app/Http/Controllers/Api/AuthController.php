@@ -18,7 +18,11 @@ class AuthController extends Controller
                 'device_name' => 'required',
             ]);
             if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors(), 'code' => 401]);
+                return response()->json([
+                    'error' => $validator->errors(),
+                    'status_code' => 401,
+                    'message' => 'Lỗi xác thực đầu vào!',
+                ]);
             }
 
             $credentials = request(['email', 'password']);
@@ -26,27 +30,31 @@ class AuthController extends Controller
             if (!Auth::attempt($credentials)){
                 return response()->json([
                     'status_code' => 500,
-                    'message' => 'Unauthorized!',
+                    'message' => 'Sai email hoặc mật khẩu!',
                 ]);
             }
 
             $user = User::where('email', $request->email)->first();
-            $employee_id = "";
             if($user->employee != null){
                 $employee_id = $user->employee->id;
+                $token =  $user->createToken($request->device_name)->plainTextToken;
+                return response()->json([
+                    'status_code' => 200,
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                    'employee_id' => $employee_id,
+                    'message' => 'Đăng nhập thành công!',
+                ]);
             }
 
-            $token =  $user->createToken($request->device_name)->plainTextToken;
             return response()->json([
-                'status_code' => 200,
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-                'employee_id' => $employee_id,
+                'status_code' => 401,
+                'message' => 'Chưa tạo hồ sơ!',
             ]);
         } catch (\Exception $error) {
             return response()->json([
                 'status_code' => 500,
-                'message' => 'Error in Login',
+                'message' => 'Đã có lỗi xảy ra!',
                 'error' => $error->getMessage(),
             ]);
         }
@@ -71,4 +79,69 @@ class AuthController extends Controller
         $user = $request->user();
         return response()->json($user);
     }
+
+    public function save_key(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'publickey' => 'required|string|',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => $validator->errors(),
+                'status_code' => 401,
+                'message' => 'Lỗi xác thực đầu vào!',
+            ]);
+        }
+
+        $user = $request->user();
+        $data = $request->only('publickey');
+        $rs =  $user->fill($data)->save();
+        if($rs){
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'Đã thêm vân tay!',
+            ]);
+        }
+        return response()->json([
+            'status_code' => 401,
+            'message' => 'Đã có lỗi xảy ra!',
+        ]);
+    }
+
+    public function verify_key(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'payload' => 'required|string|',
+            'signature' => 'required|string|',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => $validator->errors(),
+                'status_code' => 401,
+                'message' => 'Lỗi xác thực đầu vào!',
+            ]);
+        }
+
+        $publicKey = $request->user()->publickey;
+
+        // Convert publicKey in to PEM format (don't forget the line breaks).
+        $publicKey_pem = "-----BEGIN PUBLIC KEY-----\n$publicKey\n-----END PUBLIC KEY-----";
+
+        // Get public key.
+        $key = openssl_pkey_get_public($publicKey_pem);
+        $result = openssl_verify($request->payload, base64_decode($request->signature), $key, OPENSSL_ALGO_SHA256);
+
+        if ($result == 1)
+        {
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'Verified'
+            ]);
+        }
+
+        return response()->json([
+            'status_code' => 401,
+            'message' => 'Unverified'
+        ]);
+   }
 }

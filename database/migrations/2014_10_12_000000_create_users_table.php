@@ -22,7 +22,7 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
-            $table->string('publickey')->nullable();
+            $table->text('publickey')->nullable();
             $table->boolean('status_upload')->default(false);
             $table->foreignId('role_id')->default(2);
             $table->string('provider_name')->nullable();

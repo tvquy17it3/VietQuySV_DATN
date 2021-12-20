@@ -145,3 +145,19 @@
   </div>
 </div>
 @endsection
+@section('scripts')
+  <script>
+    toastr.options = {
+      "newestOnTop": true,
+      "progressBar": true,
+      "onclick": null,
+    }
+
+    $(document).ready(function() {
+      var check = "{{\Session::has('success')}}";
+      if (check != "") {
+        toastr["success"]("{!! \Session::get('success') !!}");
+      }
+    });
+  </script>
+@endsection

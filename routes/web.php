@@ -40,4 +40,7 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
 
     Route::get('/change_shifts', [TimesheetController::class,'change_shifts'])->name('admin.change-shifts');
     Route::POST('/change_shifts/{shift}', [TimesheetController::class,'update_shifts'])->name('admin.update_shifts');
+
+    //Training
+    Route::get('/training', [EmployeeController::class,'training'])->name('admin.training');
 });
