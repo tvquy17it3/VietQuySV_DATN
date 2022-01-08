@@ -94,13 +94,13 @@
                   <tbody>
                     <tr>
                       <td>Check In:</td>
-                      <td>{{ $timesheets->check_in}}
+                      <td>{{ date("d/m/Y - H:i", strtotime($timesheets->check_in)) }}
                       </td>
                     </tr>
                     <tr>
                       <td>Checkout</td>
                       @if ($timesheets->status)
-                        <td>{{ $timesheets->check_out}}&nbsp;<span class="fa fa-check text-primary"></span></td>
+                        <td>{{  date("d/m/Y - H:i", strtotime($timesheets->check_out)) }}&nbsp;<span class="fa fa-check text-primary"></span></td>
                       @else
                         <td>
                           <span class="help-block" style="color:red">
@@ -137,7 +137,7 @@
             </div>
             <div class="row">
               @foreach ($timesheets->images as $img)
-              <div class="card" style="width: 18rem;">
+              <div class="card" style="width: 10rem;">
                 <img class="card-img-top" src="{{ $img->img }}" alt="Card image cap">
                 <div class="card-body">
                   <p class="card-text">{{ $img->created_at }}, {{ $img->confidence }}%</p>

@@ -185,7 +185,7 @@
     });
 
     async function train(){
-      const train_url = 'https://fastapi-tvquy17it3.cloud.okteto.net/train';
+      const train_url = '{{ config('app.training') }}';
       console.log("Starting...");
       var notice = "";
       try {
@@ -208,6 +208,8 @@
         loading.hidden = true;
       } catch (error) {
         console.log(error);
+        loading.hidden = true;
+        alert("Đã có lỗi xảy ra!");
       }
     }
   </script>

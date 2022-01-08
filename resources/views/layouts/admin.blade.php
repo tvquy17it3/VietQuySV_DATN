@@ -30,7 +30,7 @@
         <div class="col-md-3 left_col menu_fixed">
           <div class="left_col scroll-view">
             <div class="navbar nav_title" style="border: 0;">
-              <a href="" class="site_title"><i class="fa fa-paw"></i> <span>VietQuy!</span></a>
+              <a href="" class="site_title"><i class="fa fa-server"></i> <span>VietQuy!</span></a>
             </div>
             <div class="clearfix"></div>
             <!-- menu profile quick info -->
@@ -67,8 +67,7 @@
                   <li><a><i class="fa fa-clone"></i>Tài khoản <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
                       <li><a href="{{ route('admin.accounts') }}">Tài khoản</a></li>
-                      <li><a href="admin/blocked">Đã khóa</a></li>
-                      <li><a href="admin/roles-permissions">Phân quyền</a></li>
+                      <li><a href="{{ route('admin.blocked') }}">Đã khóa</a></li>
                     </ul>
                   </li>
                 </ul>
@@ -176,7 +175,7 @@
         <!-- footer content -->
         <footer>
           <div class="pull-right">
-            Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+            <!-- Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a> -->
           </div>
           <div class="clearfix"></div>
         </footer>

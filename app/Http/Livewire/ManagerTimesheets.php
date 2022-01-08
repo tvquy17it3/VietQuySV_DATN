@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use DB;
 
 
 class ManagerTimesheets extends Component
@@ -55,7 +56,7 @@ class ManagerTimesheets extends Component
         }else{
             //Reservation::whereBetween('reservation_from', [$from, $to])->get();
 
-            $timesheets = Timesheet::with(['employee', 'employee.user'])->whereBetween('check_in', [$this->date_from, $this->date])
+            $timesheets = Timesheet::with(['employee', 'employee.user'])->whereBetween(DB::raw('DATE(check_in)'), [$this->date_from, $this->date])
             ->where(function ($query){
                 if($this->select_shifts == 0){
                     $query->whereIn('shift_id', $this->key_shifts);

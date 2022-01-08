@@ -73,8 +73,8 @@
                         <td>{{$values->employee->user->email}}</td>
                         <td>{{$values->employee->phone}}</td>
                         <!-- <td>{{$values->employee->department->name}}</td> -->
-                        <td>{{$values->check_in}}</td>
-                        <td>{{$values->check_out}}</td>
+                        <td>{{ date("d/m/Y - H:i", strtotime($values->check_in))}}</td>
+                        <td>{{ date("d/m/Y - H:i", strtotime($values->check_out))}}</td>
                         <td>{{$values->hour}}</td>
                         <td>
                             <a href="{{ route('admin.view-timesheets-detail', ['id' => $values->id]) }}" type="button" class="btn btn-primary btn-sm">

@@ -10,6 +10,11 @@ class UserController extends Controller
 {
     public function index()
     {
-        return View('admin.accounts');
+        return View('admin.accounts',['typeAccount'=>'all-accounts']);
+    }
+
+    public function blocked()
+    {
+        return View('admin.accounts',['typeAccount'=>'blocked']);
     }
 }

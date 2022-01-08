@@ -33,6 +33,7 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
 
     Route::get('/emp', [EmployeeController::class,'index'])->name('admin.index');
     Route::get('/accounts', [UserController::class,'index'])->name('admin.accounts');
+    Route::get('/blocked', [UserController::class,'blocked'])->name('admin.blocked');
 
     //timesheets
     Route::get('/timesheet', [TimesheetController::class,'index'])->name('admin.timesheets');

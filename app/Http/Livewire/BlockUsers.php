@@ -7,7 +7,7 @@ use Livewire\WithPagination;
 use App\Models\User;
 use App\Models\Role;
 
-class ManagerAccount extends Component
+class BlockUsers extends Component
 {
     use WithPagination;
     public $search = '';
@@ -17,6 +17,7 @@ class ManagerAccount extends Component
     public $roles=[];
     public $checked =[];
     public $paginate= 10;
+    public $userIdRemote = null;
 
     public function __construct()
     {
@@ -26,28 +27,41 @@ class ManagerAccount extends Component
     public function render()
     {
         if ($this->search !=null) {
-            $users =  User::with(['roles','employee'])->withTrashed()->search(trim($this->search))->simplePaginate($this->paginate);
-            return view('livewire.manager-account',['users' => $users]);
+            $users =  User::with(['roles','employee'])->onlyTrashed()->search(trim($this->search))->simplePaginate($this->paginate);
+            return view('livewire.block-users',['users' => $users]);
         }
 
-        $users = User::with(['roles','employee'])->whereHas('roles', function($q){
+        $users = User::with(['roles','employee'])->onlyTrashed()->whereHas('roles', function($q){
             $q->whereNotIn('slug', ['admin']);
         })->orderBy('id', 'ASC')->simplePaginate($this->paginate);
-        // dd($users);
-        return view('livewire.manager-account',['users' => $users]);
+
+        return view('livewire.block-users',['users' => $users]);
     }
 
     public function confirmUserRemoved($user_id, $email)
     {
-        $this->userId = $user_id;
+        $this->userIdRemote = $user_id;
         $this->email=$email;
         $this->dispatchBrowserEvent('show-delete-modal');
     }
 
-    public function blockUser()
+    public function confirmUserRestore($user_id, $email)
     {
-        User::findOrFail($this->userId)->delete();
-        $this->dispatchBrowserEvent('hide-delete-modal',['message'=>'Đã khoá tài khoản: '.$this->email]);
+        $this->userIdRemote = $user_id;
+        $this->email=$email;
+        $this->dispatchBrowserEvent('show-restore-modal');
+    }
+
+    public function restore()
+    {
+        User::withTrashed()->where('id', $this->userIdRemote)->restore();
+        $this->dispatchBrowserEvent('hide-restore-modal',['message'=>'Đã khôi phục tài khoản: '.$this->email]);
+    }
+
+    public function deleteUser()
+    {
+        User::withTrashed()->where('id', $this->userIdRemote)->forceDelete();
+        $this->dispatchBrowserEvent('hide-delete-modal',['message'=>'Đã xoá tài khoản: '.$this->email]);
     }
 
     public function isChecked($user_id)
@@ -79,6 +93,18 @@ class ManagerAccount extends Component
             $this->dispatchBrowserEvent('noti',['message'=> 'Đã xoá tài khoản']);
         }else{
             $this->dispatchBrowserEvent('noti',['message'=> 'Error']);
+        }
+        $this->checked = [];
+    }
+
+    public function restoreChecked()
+    {
+        $result = User::withTrashed()->whereKey($this->checked)->restore();
+
+        if ( $result == true ) {
+            $this->dispatchBrowserEvent('noti',['message'=> 'Đã khôi phục tài khoản!']);
+        }else{
+            $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
         }
         $this->checked = [];
     }

@@ -3,7 +3,13 @@
 
 @section('content')
     <div class="content">
-        @livewire('manager-account')
+        @if ($typeAccount=='all-accounts')
+            @livewire('manager-account')
+        @endif
+
+        @if ($typeAccount=='blocked')
+            @livewire('block-users')
+        @endif
     </div>
 @endsection
 @section('scripts')
