@@ -20,6 +20,7 @@ class ManagerTimesheets extends Component
     public $select_shifts = 0;
     public $shifts = [];
     public $key_shifts = [];
+    public $date_from = '';
     public $date= '';
     public $timesheets_id, $employee_id, $shift_id, $check_in, $check_out, $email, $note;
     public $input_search = '';
@@ -28,6 +29,7 @@ class ManagerTimesheets extends Component
     public function __construct()
     {
         $this->date = date('Y-m-d');
+        $this->date_from = date('Y-m-d');
         $this->shifts= Shift::All();
         foreach ($this->shifts as $item) {
             $this->key_shifts[] = $item->id;
@@ -51,7 +53,9 @@ class ManagerTimesheets extends Component
         if ($this->search !=null) {
             $timesheets = Timesheet::with(['employee', 'employee.user'])->search(trim($this->search))->orderBy('check_in', 'DESC')->simplePaginate($this->paginate);
         }else{
-            $timesheets = Timesheet::with(['employee', 'employee.user'])->whereDate('check_in', '=', $this->date)
+            //Reservation::whereBetween('reservation_from', [$from, $to])->get();
+
+            $timesheets = Timesheet::with(['employee', 'employee.user'])->whereBetween('check_in', [$this->date_from, $this->date])
             ->where(function ($query){
                 if($this->select_shifts == 0){
                     $query->whereIn('shift_id', $this->key_shifts);

@@ -89,11 +89,13 @@
 
             <div class="card mb-4">
               <div class="card-body">
+                <div>@livewire('edit-timesheet', ['timesheet' => $timesheets])</div>
                 <table class="table user-view-table m-0">
                   <tbody>
                     <tr>
                       <td>Check In:</td>
-                      <td>{{ $timesheets->check_in}}</td>
+                      <td>{{ $timesheets->check_in}}
+                      </td>
                     </tr>
                     <tr>
                       <td>Checkout</td>
@@ -149,5 +151,33 @@
     </div>
   </div>
 </div>
+<div>
+</div>
+@endsection
+@section('scripts')
+<script>
+    toastr.options = {
+      "newestOnTop": true,
+      "progressBar": true,
+      "onclick": null,
+    }
+
+    window.addEventListener('noti-error', event=>{
+        toastr.error(event.detail.message,'Error!!');
+    });
+
+    window.addEventListener('noti', event=>{
+        toastr.success(event.detail.message,'Success!!');
+    })
+
+    window.addEventListener('show_editTimeSheetsModal', event=>{
+        $('#editTimeSheetsModal').modal('show');
+    })
+
+    window.addEventListener('hide_editTimeSheetsModal', event=>{
+        $('#editTimeSheetsModal').modal('hide');
+        toastr.success(event.detail.message,'Success!!');
+    })
+</script>
 @endsection
 <!-- https://www.bootdey.com/snippets/view/view-user-information#html -->

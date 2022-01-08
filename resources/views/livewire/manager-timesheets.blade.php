@@ -21,6 +21,12 @@
         <h2><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newTimeSheetsModal" wire:click="reset_att">Thêm</button> </h2>
         <ul class="nav navbar-right panel_toolbox">
           <li style="margin-right: 10px;">
+            <input type="date" value="{{ $date_from }}" class="form-control" wire:model="date_from">
+          </li>
+          <li style="margin-right: 10px; margin-top:8px;">
+            ->
+          </li>
+          <li style="margin-right: 10px;">
             <input type="date" value="{{ $date }}" class="form-control" wire:model="date">
           </li>
           <li style="margin-right: 10px;">
