@@ -41,7 +41,7 @@ class ManagerTimesheets extends Component
         'employee_id' => 'required',
         'shift_id' => 'required',
         'check_in' => 'required|date',
-        'check_out' => 'required|date',
+        'check_out' => 'required|date|after:check_in',
     ];
 
     public function render()
@@ -54,8 +54,6 @@ class ManagerTimesheets extends Component
         if ($this->search !=null) {
             $timesheets = Timesheet::with(['employee', 'employee.user'])->search(trim($this->search))->orderBy('check_in', 'DESC')->simplePaginate($this->paginate);
         }else{
-            //Reservation::whereBetween('reservation_from', [$from, $to])->get();
-
             $timesheets = Timesheet::with(['employee', 'employee.user'])->whereBetween(DB::raw('DATE(check_in)'), [$this->date_from, $this->date])
             ->where(function ($query){
                 if($this->select_shifts == 0){
@@ -71,28 +69,32 @@ class ManagerTimesheets extends Component
     public function save()
     {
         $this->validate();
-        $ip = $this->getUserIpAddr();
-        $location = $this->check_location($ip);
-        $note = "&Add(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
         $start = new Carbon($this->check_in);
         $end  = new Carbon($this->check_out);
         $hour =  $start->diffInHours($end);
-        $result = Timesheet::create([
-            'employee_id' => $this->employee_id,
-            'shift_id' => $this->shift_id,
-            'check_in' => $this->check_in,
-            'check_out' => $this->check_out,
-            'hour' => $hour,
-            'location' => $location['location'],
-            'ip_address' => $ip,
-            'note' => $this->note."".$note,
-            'status' => 1
-        ]);
+        if($hour <= 12){
+            $ip = $this->getUserIpAddr();
+            $location = $this->check_location($ip);
+            $note = "&Add(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+            $result = Timesheet::create([
+                'employee_id' => $this->employee_id,
+                'shift_id' => $this->shift_id,
+                'check_in' => $this->check_in,
+                'check_out' => $this->check_out,
+                'hour' => $hour,
+                'location' => $location['location'],
+                'ip_address' => $ip,
+                'note' => $this->note."".$note,
+                'status' => 1
+            ]);
 
-        if ( $result == true ) {
-            $this->dispatchBrowserEvent('hide-modal',['message'=> 'Đã thêm thành công']);
+            if ( $result == true ) {
+                $this->dispatchBrowserEvent('hide-modal',['message'=> 'Đã thêm thành công']);
+            }else{
+                $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+            }
         }else{
-            $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+            $this->dispatchBrowserEvent('noti-error',['message'=> 'Tối đa 12 tiếng!']);
         }
     }
 
@@ -117,26 +119,35 @@ class ManagerTimesheets extends Component
     public function edit()
     {
         $find_timesheets = Timesheet::findOrFail($this->timesheets_id);
+        // $this->validate();
         $start = new Carbon($this->check_in);
         $end  = new Carbon($this->check_out);
-        $hour =  $start->diffInHours($end);
-        $ip = $this->getUserIpAddr();
-        $location = $this->check_location($ip);
-        $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
-        $result = $find_timesheets->update([
-            'shift_id' => $this->shift_id,
-            'check_in' => $this->check_in,
-            'check_out' => $this->check_out,
-            'hour' => $hour,
-            'status' => 1,
-            'note' => $note,
-        ]);
-
-        if ( $result == true ) {
-            $this->reset_att();
-            $this->dispatchBrowserEvent('hide_editTimeSheetsModal',['message'=> 'Đã sửa thành công']);
+        if($end < $start){
+            $this->dispatchBrowserEvent('noti-error',['message'=> 'Thời gian check out phải lớn hơn check in']);
         }else{
-            $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+            $hour =  $start->diffInHours($end);
+            if($hour <= 12){
+                $ip = $this->getUserIpAddr();
+                $location = $this->check_location($ip);
+                $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+                $result = $find_timesheets->update([
+                    'shift_id' => $this->shift_id,
+                    'check_in' => $this->check_in,
+                    'check_out' => $this->check_out,
+                    'hour' => $hour,
+                    'status' => 1,
+                    'note' => $note,
+                ]);
+
+                if ( $result == true ) {
+                    $this->reset_att();
+                    $this->dispatchBrowserEvent('hide_editTimeSheetsModal',['message'=> 'Đã sửa thành công']);
+                }else{
+                    $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+                }
+            }else{
+                $this->dispatchBrowserEvent('noti-error',['message'=> 'Tối đa 12 tiếng!']);
+            }
         }
     }
 

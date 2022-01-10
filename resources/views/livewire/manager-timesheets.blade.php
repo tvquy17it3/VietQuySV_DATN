@@ -111,6 +111,9 @@
           </button>
         </div>
         <form wire:submit.prevent="save">
+          @if($errors->has('check_out'))
+              <div class="error" hidden>{{ $errors->first('check_out') }}</div>
+          @endif
           <div class="modal-body">
             <div class="form-group">
               <div>

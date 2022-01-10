@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TimesheetController;
 // sudo /opt/lampp/manager-linux-x64.run
 // sudo /opt/lampp/lampp start
 // php artisan make:livewire EditEmployee
+// php artisan serve --host 0.0.0.0
 
 
 Route::get('/', function () {

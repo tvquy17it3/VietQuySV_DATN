@@ -5,7 +5,7 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use App\Models\Timesheet;
 use Livewire\WithPagination;
-
+use DB;
 class TimesheetsEmployee extends Component
 {
     use WithPagination;
@@ -14,6 +14,26 @@ class TimesheetsEmployee extends Component
     public function render()
     {
         $timesheets = Timesheet::with(['employee', 'shifts'])->where('employee_id', $this->employee_id)->orderBy('check_in', 'DESC')->simplePaginate($this->paginate);
-        return view('livewire.timesheets-employee', ['timesheets'=> $timesheets]);
+
+        // $statistical = Timesheet::with(['employee', 'shifts'])->where('employee_id', $this->employee_id)->selectRaw("year(check_in) year, month(check_in) month, count(*) count_checkin, SUM(hour) as hour")
+        // ->groupBy('year', 'month')
+        // ->orderBy('year', 'desc')
+        // ->orderBy('month', 'desc')
+        // ->get();
+
+        $statistical = Timesheet::with(['employee', 'shifts'])->where('employee_id', $this->employee_id)->selectRaw("extract(year from check_in) as year, extract(month from check_in) as month, count(*) as count_checkin, SUM(hour) as hour")
+        ->groupBy('year', 'month')
+        ->orderBy('year', 'desc')
+        ->orderBy('month', 'desc')
+        ->get();
+        // dd($statistical);
+
+        foreach ($statistical as $month) {
+            $months[] = $month->month."/".$month->year;
+            $counts[] = $month->count_checkin;
+            $sum_hours[] = $month->hour;
+        }
+
+        return view('livewire.timesheets-employee', ['timesheets'=> $timesheets, 'months' => $months, 'counts' => $counts,'sum_hours' => $sum_hours]);
     }
 }

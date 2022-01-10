@@ -49,23 +49,31 @@ class EditTimesheet extends Component
         $find_timesheets = Timesheet::findOrFail($this->timesheets_id);
         $start = new Carbon($this->check_in);
         $end  = new Carbon($this->check_out);
-        $hour =  $start->diffInHours($end);
-        $ip = $this->getUserIpAddr();
-        $location = $this->check_location($ip);
-        $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
-        $result = $find_timesheets->update([
-            'shift_id' => $this->shift_id,
-            'check_in' => $this->check_in,
-            'check_out' => $this->check_out,
-            'hour' => $hour,
-            'status' => 1,
-            'note' => $note,
-        ]);
-
-        if ($result == true) {
-            $this->dispatchBrowserEvent('hide_editTimeSheetsModal',['message'=> 'Đã sửa thành công']);
+        if($end < $start){
+            $this->dispatchBrowserEvent('noti-error',['message'=> 'Thời gian check out phải lớn hơn check in']);
         }else{
-            $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+            $hour =  $start->diffInHours($end);
+            if($hour <= 12){
+                $ip = $this->getUserIpAddr();
+                $location = $this->check_location($ip);
+                $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+                $result = $find_timesheets->update([
+                    'shift_id' => $this->shift_id,
+                    'check_in' => $this->check_in,
+                    'check_out' => $this->check_out,
+                    'hour' => $hour,
+                    'status' => 1,
+                    'note' => $note,
+                ]);
+
+                if ($result == true) {
+                    $this->dispatchBrowserEvent('hide_editTimeSheetsModal',['message'=> 'Đã sửa thành công']);
+                }else{
+                    $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
+                }
+            }else{
+                $this->dispatchBrowserEvent('noti-error',['message'=> 'Tối đa 12 tiếng!']);
+            }
         }
     }
 

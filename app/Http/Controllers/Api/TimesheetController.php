@@ -37,47 +37,55 @@ class TimesheetController extends Controller
 
             if($emp){
                 $dt = Carbon::now('Asia/Ho_Chi_Minh');
-                //$dt = Carbon::create(2021, 12, 21, 12, 40, 00);
+                //$dt = Carbon::create(2022, 01, 11, 20, 40, 00);
                 $check_exist = Timesheet::whereDate('check_in', '=', $dt->toDateString())
                 ->where('employee_id', $emp->id)->where('shift_id', $request->shift_id)->first();
+
                 if($check_exist){
                     $check_in  = Carbon::create($check_exist->check_in);
                     $check_out  = Carbon::create($dt->toDateTimeString());
                     $hours =  $check_out->diffInHours($check_in);
-                    $note = $check_exist->note;
-                    $location = $this->check_location($ip);
-                    $note = $note. "&check out(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
-                    DB::beginTransaction();
-                    try {
-                        $check_exist->update([
-                            'status' => 1,
-                            'check_out' => $dt->toDateTimeString(),
-                            'hour' => $hours,
-                            'note' => $note,
-                        ]);
-                        $check_exist->save();
-                        $employee = Image::create([
-                            'img' => $request->image,
-                            'timesheet_id' => $check_exist->id,
-                            'confidence' =>$confidence,
-                        ]);
 
-                        DB::commit();
+                    if($hours <= 12){
+                        $note = $check_exist->note;
+                        $location = $this->check_location($ip);
+                        $note = $note. "&check out(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+                        DB::beginTransaction();
+                        try {
+                            $check_exist->update([
+                                'status' => 1,
+                                'check_out' => $dt->toDateTimeString(),
+                                'hour' => $hours,
+                                'note' => $note,
+                            ]);
+                            $check_exist->save();
+                            $employee = Image::create([
+                                'img' => $request->image,
+                                'timesheet_id' => $check_exist->id,
+                                'confidence' =>$confidence,
+                            ]);
+
+                            DB::commit();
+                            return response()->json([
+                                'status' => true,
+                                'message' => 'Thành công!',
+                                'results' =>  $check_exist,
+                            ]);
+                        } catch (Exception $e) {
+                            DB::rollBack();
+
+                            throw new Exception($e->getMessage());
+                        }
                         return response()->json([
-                            'status' => true,
-                            'message' => 'Thành công!',
-                            'results' =>  $check_exist,
+                            'status' => false,
+                            'message' => 'Đã có lỗi xảy ra!',
                         ]);
-                    } catch (Exception $e) {
-                        DB::rollBack();
-
-                        throw new Exception($e->getMessage());
+                    }else{
+                        return response()->json([
+                            'status' => false,
+                            'message' => 'Không thể chấm công, Vì quá thời gian cho phép!',
+                        ]);
                     }
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Đã có lỗi xảy ra!',
-                    ]);
-
                 }else{
                     $shifts= Shift::find($request->shift_id);
                     $check_in  = Carbon::create($dt->toDateString()." ".$shifts->check_in);
