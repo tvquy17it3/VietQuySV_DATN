@@ -83,7 +83,6 @@ class ManagerTimesheets extends Component
                 'check_out' => $this->check_out,
                 'hour' => $hour,
                 'location' => $location['location'],
-                'ip_address' => $ip,
                 'note' => $this->note."".$note,
                 'status' => 1
             ]);

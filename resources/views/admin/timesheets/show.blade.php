@@ -114,8 +114,12 @@
                       <td>{{ $timesheets->hour}} tiếng</td>
                     </tr>
                     <tr>
-                      <td>IP</td>
-                      <td>{{ $timesheets->ip_address}}</td>
+                      <td>Đi muộn:</td>
+                      @if ($timesheets->late == 0)
+                        <td>Không</td>
+                      @else
+                        <td><span class="help-block" style="color:red">Muộn {{ $timesheets->late }}&nbsp; phút</span></td>
+                      @endif
                     </tr>
                     <tr>
                       <td>Tọa độ:</td>
@@ -136,13 +140,22 @@
               <hr class="border-light m-0">
             </div>
             <div class="row">
-              @foreach ($timesheets->images as $img)
-              <div class="card" style="width: 10rem;">
-                <img class="card-img-top" src="{{ $img->img }}" alt="Card image cap">
-                <div class="card-body">
-                  <p class="card-text">{{ $img->created_at }}, {{ $img->confidence }}%</p>
+              @foreach ($timesheets->timesheet_details as $detail)
+                <div class="card" style="width: 16rem;">
+                  <img class="card-img-top" src="{{ $detail->img }}" alt="Card image cap">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ date("H:i:s - d/m/Y", strtotime($detail->created_at))}}</h5>
+                    <p class="card-text">{{ $detail->note }}</p>
+                  </div>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Face: {{ $detail->confidence }}%</li>
+                    <li class="list-group-item">Vi tri: {{ "[".$detail->latitude.",".$detail->longitude."]" }}</li>
+                    <li class="list-group-item">Khoảng cách: {{ $detail->distance }}m</li>
+                  </ul>
+                  <div class="card-body">
+                    <a href="http://maps.google.com/maps?z=12&t=m&q={{ ($detail->latitude.','.$detail->longitude) }}"  class="btn btn-primary" target="_blank">Xem trên bản đồ</a>
+                  </div>
                 </div>
-              </div>
               @endforeach
             </div>
           </div>

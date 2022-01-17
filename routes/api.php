@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/login', [AuthController::class,'login']);
+Route::get('/geolocation', [TimesheetController::class,'geolocation']);
 // Route::post('/register', [AuthController::class,'register']);
 
 Route::middleware(['auth:sanctum'])->group(function () {

@@ -43,6 +43,9 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
     Route::get('/change_shifts', [TimesheetController::class,'change_shifts'])->name('admin.change-shifts');
     Route::POST('/change_shifts/{shift}', [TimesheetController::class,'update_shifts'])->name('admin.update_shifts');
 
+    Route::get('/change_location', [TimesheetController::class,'change_location'])->name('admin.change_location');
+    Route::POST('/change_location/{location}', [TimesheetController::class,'update_location'])->name('admin.update_location');
+
     //Training
     Route::get('/training', [EmployeeController::class,'training'])->name('admin.training');
 });

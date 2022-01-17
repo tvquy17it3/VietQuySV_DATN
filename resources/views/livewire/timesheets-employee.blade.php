@@ -31,13 +31,13 @@
           @if ($month == 0)
           <?php $month = date("m/Y", strtotime($values->check_in)); ?>
           <tr>
-            <td colspan="5" class="p-3 mb-2 bg-secondary text-white"><b>{{$month}}</b></td>
+            <td colspan="5" class="p-3 mb-2 bg-secondary text-white text-center"><b>{{$month}}</b></td>
           </tr>
           @endif
           @if ($month == date("m/Y", strtotime($values->check_in)))
           <tr>
             <td></td>
-            <!-- <td>{{$values->employee->user->name}}</td> -->
+            <!-- <td>{$values->employee->user->name}</td> -->
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_in))}}</td>
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_out))}}</td>
             <td>{{$values->hour}}</td>

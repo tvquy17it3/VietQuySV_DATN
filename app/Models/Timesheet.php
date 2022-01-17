@@ -15,8 +15,8 @@ class Timesheet extends Model
         'check_in',
         'check_out',
         'hour',
-        'ip_address',
         'location',
+        'late',
         'employee_id',
         'shift_id',
         'note',
@@ -33,9 +33,9 @@ class Timesheet extends Model
         return $this->belongsTo(Shift::class, 'shift_id');
     }
 
-    public function images()
+    public function timesheet_details()
     {
-        return $this->hasMany(Image::class);
+        return $this->hasMany(TimesheetDetail::class);
     }
 
     public function scopeSearch($query, $term)

@@ -27,7 +27,9 @@ class TimesheetsEmployee extends Component
         ->orderBy('month', 'desc')
         ->get();
         // dd($statistical);
-
+        $months = [];
+        $counts = [];
+        $sum_hours = [];
         foreach ($statistical as $month) {
             $months[] = $month->month."/".$month->year;
             $counts[] = $month->count_checkin;

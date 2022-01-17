@@ -17,13 +17,14 @@ class CreateTimesheetsTable extends Migration
             $table->id();
             $table->dateTime('check_in');
             $table->dateTime('check_out');
-            $table->tinyInteger('hour')->default(0);
-            $table->string('ip_address', 50)->nullable();
             $table->string('location', 50)->nullable();
-            $table->foreignId('employee_id');
-            $table->foreignId('shift_id');
+            $table->tinyInteger('hour')->default(0);
+            $table->tinyInteger('late')->default(0);
             $table->tinyInteger('status')->default(0);
             $table->text('note')->nullable();
+            $table->foreignId('employee_id');
+            $table->foreignId('shift_id');
+
             $table->softDeletes();
             $table->timestamps();
 

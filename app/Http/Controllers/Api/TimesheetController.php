@@ -8,7 +8,8 @@ use Validator;
 use App\Models\Timesheet;
 use App\Models\Shift;
 use Carbon\Carbon;
-use App\Models\Image;
+use App\Models\TimesheetDetail;
+use App\Models\Geolocation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,6 +23,10 @@ class TimesheetController extends Controller
                 'image' => 'required|string',
                 'confidence' => 'required|numeric|between:0,1000',
                 'ip_address' => 'required',
+                'latitude' => 'required',
+                'longitude' => 'required',
+                'distance' => 'required|integer',
+                'accuracy' => 'required|numeric|between:0,1000',
             ]);
             if ($validator->fails()) {
                 return response()->json([
@@ -30,14 +35,28 @@ class TimesheetController extends Controller
                 ]);
             }
 
+            $distance = $request->distance;
+            $geolocation = Geolocation::orderBy('id', 'DESC')->first();
+            if($geolocation->max_distance < $distance){
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không nằm trong vị trí cho phép!',
+                ]);
+            }
+
             $user = $request->user();
             $emp = $user->employee;
             $ip = $request->ip_address;
             $confidence = $request->confidence;
 
+            $latitude = $request->latitude;
+            $longitude = $request->longitude;
+
+            $accuracy = $request->accuracy;
+
             if($emp){
                 $dt = Carbon::now('Asia/Ho_Chi_Minh');
-                //$dt = Carbon::create(2022, 01, 11, 20, 40, 00);
+                //$dt = Carbon::create(2022, 01, 15, 9, 40, 00);
                 $check_exist = Timesheet::whereDate('check_in', '=', $dt->toDateString())
                 ->where('employee_id', $emp->id)->where('shift_id', $request->shift_id)->first();
 
@@ -59,10 +78,15 @@ class TimesheetController extends Controller
                                 'note' => $note,
                             ]);
                             $check_exist->save();
-                            $employee = Image::create([
+                            $employee = TimesheetDetail::create([
                                 'img' => $request->image,
                                 'timesheet_id' => $check_exist->id,
-                                'confidence' =>$confidence,
+                                'confidence' => $confidence,
+                                "accuracy"=> $accuracy,
+                                "latitude" => $latitude,
+                                "longitude" => $longitude,
+                                "distance" => $distance,
+                                "ip_address" => $ip,
                             ]);
 
                             DB::commit();
@@ -97,9 +121,9 @@ class TimesheetController extends Controller
                     $check = $dt->between($check_in_sub,$check_in_add);
 
                     if($check){
-                        $note = $this->check_later($dt, $check_in, $check_in_add);
+                        $note_time = $this->check_later($dt, $check_in, $check_in_add);
                         $location = $this->check_location($ip);
-                        $note = $note. "&check in(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+                        $note = $note_time['note']. "&check in(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
                         DB::beginTransaction();
                         try {
                             $result = Timesheet::create([
@@ -107,18 +131,21 @@ class TimesheetController extends Controller
                                 'shift_id' => $request->shift_id,
                                 'check_in' => $dt->toDateTimeString(),
                                 'check_out' => $dt->toDateTimeString(),
-                                'hour' => 0,
                                 'location' =>  $location['location'],
-                                'ip_address' => $ip,
                                 'note' => $note,
+                                'late' => $note_time['late'],
                             ]);
 
-                            $employee = Image::create([
+                            $employee = TimesheetDetail::create([
                                 'img' => $request->image,
                                 'timesheet_id' => $result->id,
                                 'confidence' => $confidence,
+                                "accuracy"=> $accuracy,
+                                "latitude" => $latitude,
+                                "longitude" => $longitude,
+                                "distance" => $distance,
+                                "ip_address" => $ip,
                             ]);
-
 
                             DB::commit();
                             return response()->json([
@@ -172,17 +199,20 @@ class TimesheetController extends Controller
     {
         $check = $now->between($check_in,$check_in_add);
         $note = "";
+        $hour = 0;
+        $minutes = 0;
 
         if($check){
             $hour =  $now->diffInHours($check_in);
             $minutes =  $now->diffInMinutes($check_in);
             if($hour>0){
                 $note = "Đi muộn sau ". $hour. "giờ ". $minutes. " phút. ";
+                $minutes = $minutes + ($hour*60);
             }elseif($minutes>=1){
                 $note = "Đi muộn sau ". $minutes. " phút. ";
             }
         }
-        return $note;
+        return array('note' => $note, 'late' => $minutes);
     }
 
     public function check_location($ip)
@@ -238,6 +268,26 @@ class TimesheetController extends Controller
             'status_code' => 401,
             'message' => "Không có dữ liệu!",
             'data' => [],
+        ]);
+    }
+
+    public function geolocation()
+    {
+        $geolocation = Geolocation::orderBy('id', 'DESC')->first();
+        if($geolocation != null){
+            return response()->json([
+                'status_code' => 200,
+                'message' => "Lấy dữ liệu thành công!",
+                'latitude' => $geolocation->latitude,
+                'longitude' => $geolocation->longitude,
+                'max_distance' =>$geolocation->max_distance
+            ]);
+        }
+
+        return response()->json([
+            'status_code' => 401,
+            'message' => "Không có dữ liệu!",
+            'data' => "",
         ]);
     }
 }
