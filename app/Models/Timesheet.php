@@ -51,4 +51,11 @@ class Timesheet extends Model
                   ->orWhere('check_out', 'like', $term);
         });
     }
+
+    public function scopeTimesheet_searchs($query, $depart)
+    {
+        $query->whereHas('employee', function($query) use($depart) {
+            $query->where('department_id', $depart);
+        })->orderBy('check_in', 'DESC');
+    }
 }

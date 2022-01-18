@@ -37,7 +37,7 @@ class TimesheetController extends Controller
 
             $distance = $request->distance;
             $geolocation = Geolocation::orderBy('id', 'DESC')->first();
-            if($geolocation->max_distance < $distance){
+            if((int)$geolocation->max_distance < (int)$distance){
                 return response()->json([
                     'status' => false,
                     'message' => 'Không nằm trong vị trí cho phép!',

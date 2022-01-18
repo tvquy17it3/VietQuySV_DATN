@@ -19,6 +19,7 @@
     <div class="x_panel">
       <div class="x_title">
         <h2><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newTimeSheetsModal" wire:click="reset_att">Thêm</button> </h2>
+        <h2><a href="{{ route('admin.timesheet-today') }}" class="btn btn-info">Xem hôm nay</a>&nbsp;</h2>
         <ul class="nav navbar-right panel_toolbox">
           <li style="margin-right: 10px;">
             <input type="date" value="{{ $date_from }}" class="form-control" wire:model="date_from">

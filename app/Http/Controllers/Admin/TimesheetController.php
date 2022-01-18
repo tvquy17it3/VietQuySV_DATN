@@ -58,4 +58,9 @@ class TimesheetController extends Controller
         ]);
         return $result ? back()->with('success', 'Cập nhật thành công!') : back()->withErrors('Đã có lỗi xãy ra!');
     }
+
+    public function timesheet_today()
+    {
+        return View('admin.timesheets.today');
+    }
 }

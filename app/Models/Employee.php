@@ -36,6 +36,11 @@ class Employee extends Model
         return $this->belongsTo(Position::class, 'position_id');
     }
 
+    public function timesheets()
+    {
+        return $this->hasMany(Timesheet::class);
+    }
+
     public function scopeSearch($query, $term)
     {
         $term = "%$term%";
@@ -44,6 +49,13 @@ class Employee extends Model
                   ->orWhere('email', 'like', $term);
         })->orwhere(function ($query) use ($term) {
             $query->where('phone', 'like', $term);
+        });
+    }
+
+    public function scopeTimesheet_search($query, $date)
+    {
+        $query->whereDoesntHave('timesheets', function ($query) use($date){
+            $query->whereDate('check_in', $date);
         });
     }
 }

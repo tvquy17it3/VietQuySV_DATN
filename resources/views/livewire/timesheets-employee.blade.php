@@ -20,6 +20,7 @@
             <th class="column-title">Check in</th>
             <th class="column-title">Check out </th>
             <th class="column-title">Số giờ</th>
+            <th class="column-title">Đi muộn</th>
             <th class="column-title no-link last"><span class="nobr">Xem</span>
             </th>
           </tr>
@@ -31,7 +32,7 @@
           @if ($month == 0)
           <?php $month = date("m/Y", strtotime($values->check_in)); ?>
           <tr>
-            <td colspan="5" class="p-3 mb-2 bg-secondary text-white text-center"><b>{{$month}}</b></td>
+            <td colspan="6" class="p-3 mb-2 bg-secondary text-white text-center"><b>{{$month}}</b></td>
           </tr>
           @endif
           @if ($month == date("m/Y", strtotime($values->check_in)))
@@ -41,6 +42,11 @@
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_in))}}</td>
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_out))}}</td>
             <td>{{$values->hour}}</td>
+            <td style="color:red">
+                @if ($values->late > 0)
+                    {{$values->late}} phút
+                @endif
+            </td>
             <td>
               <a href="{{ route('admin.view-timesheets-detail', ['id' => $values->id]) }}" type="button"
                 class="btn btn-primary btn-sm">
@@ -50,16 +56,21 @@
           </tr>
           @else
           <?php
-                    $month = date("m/Y", strtotime($values->check_in))
-                ?>
+              $month = date("m/Y", strtotime($values->check_in))
+          ?>
           <tr>
-            <td colspan="5" class="p-3 mb-2 bg-secondary text-white"><b>{{$month}}</b></td>
+            <td colspan="6" class="p-3 mb-2 bg-secondary text-white text-center"><b>{{$month}}</b></td>
           </tr>
           <tr>
             <td></td>
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_in))}}</td>
             <td>{{ date("d/m/Y - H:i", strtotime($values->check_out))}}</td>
             <td>{{$values->hour}}</td>
+            <td style="color:red">
+                @if ($values->late > 0)
+                    {{$values->late}} phút
+                @endif
+            </td>
             <td>
               <a href="{{ route('admin.view-timesheets-detail', ['id' => $values->id]) }}" type="button"
                 class="btn btn-primary btn-sm">
@@ -87,12 +98,16 @@
     },
 
     series: [{
-        name: 'Tồng lần Check In',
+        name: 'Số lần Check In',
         data: @json($counts)
     },
     {
         name: 'Tổng giờ làm',
         data: @json($sum_hours)
+    },
+    {
+        name: 'Tổng giờ đi muộn',
+        data: @json($late)
     }],
 
     xaxis: {

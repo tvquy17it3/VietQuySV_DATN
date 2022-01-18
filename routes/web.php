@@ -40,6 +40,8 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
     Route::get('/timesheet', [TimesheetController::class,'index'])->name('admin.timesheets');
     Route::get('/timesheet/{id}', [TimesheetController::class,'show'])->name('admin.view-timesheets-detail');
 
+    Route::get('/timesheet-today', [TimesheetController::class,'timesheet_today'])->name('admin.timesheet-today');
+
     Route::get('/change_shifts', [TimesheetController::class,'change_shifts'])->name('admin.change-shifts');
     Route::POST('/change_shifts/{shift}', [TimesheetController::class,'update_shifts'])->name('admin.update_shifts');
 
