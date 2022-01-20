@@ -3,62 +3,65 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use App\Models\Shift;
+use App\Models\User;
 use App\Models\Timesheet;
+use App\Models\Employee;
+use App\Models\Shift;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-
-class EditTimesheet extends Component
+class AddnewTimesheet extends Component
 {
-    public $timesheets_id, $employee_id, $shift_id, $check_in, $check_out, $email, $note;
-    public $shifts = [];
-    public $key_shifts = [];
-    public Timesheet $timesheet;
+    public $input_search = '';
+    public $employee_id, $shift_id, $check_in, $check_out, $email, $note;
+    protected $listeners = ['postAdded'];
 
     public function __construct()
     {
+        $this->date = date('Y-m-d');
+        $this->date_from = date('Y-m-d');
         $this->shifts= Shift::All();
-        foreach ($this->shifts as $item) {
-            $this->key_shifts[] = $item->id;
-        }
-    }
-
-    public function mount($timesheet)
-    {
-        $this->timesheets_id = $timesheet->id;
-        $this->check_in = date("Y-m-d\TH:i", strtotime($timesheet->check_in));
-        $this->check_out = date("Y-m-d\TH:i", strtotime($timesheet->check_out));
-        $this->email = $timesheet->employee->user->email;
-        $this->shift_id = $timesheet->shift_id;
     }
 
     protected $rules = [
         'employee_id' => 'required',
         'shift_id' => 'required',
         'check_in' => 'required|date',
-        'check_out' => 'required|date',
+        'check_out' => 'required|date|after:check_in',
     ];
+
 
     public function render()
     {
-        return view('livewire.edit-timesheet');
+        $data_search = [];
+        if($this->input_search != null){
+            $data_search =  Employee::with(['user'])->search(trim($this->input_search))->limit(5)->get();
+        }
+
+        return view('livewire.addnew-timesheet', ['data_search'=>$data_search]);
     }
 
-    public function edit()
+    public function postAdded($email = null)
     {
-        $find_timesheets = Timesheet::findOrFail($this->timesheets_id);
+        $this->employee_id = Employee::with(['user'])
+            ->whereHas('user', function($query) use($email) {
+                $query->where('email', 'like', $email);
+            })->pluck('id')->first();
+    }
+
+    public function save()
+    {
+        $this->validate();
         $start = new Carbon($this->check_in);
         $end  = new Carbon($this->check_out);
-        if($end < $start){
-            $this->dispatchBrowserEvent('noti-error',['message'=> 'Thời gian check out phải lớn hơn check in']);
-        }else{
-            $hour =  $start->diffInHours($end);
-            if($hour <= 12){
-                $shift_select = Shift::find($this->shift_id);
-                $shift_checkin = Carbon::create($start->toDateString()." ".$shift_select->check_in);
-                $shift_checkout = Carbon::create($start->toDateString()." ".$shift_select->check_out);
-
-                if($start < $shift_checkout){
+        $hour =  $start->diffInHours($end);
+        if($hour <= 12){
+            $shift_select= Shift::find($this->shift_id);
+            $shift_checkout = new Carbon($shift_select->check_out);
+            $shift_checkin = new Carbon($shift_select->check_in);
+            if($start < $shift_checkout){
+                $check_exist = Timesheet::whereDate('check_in', '=', $start->toDateString())
+                ->where('employee_id', $this->employee_id)->where('shift_id', $this->shift_id)->first();
+                if(!$check_exist){
                     $note = "";
                     $time_late = 0;
                     if($start > $shift_checkin){
@@ -68,28 +71,33 @@ class EditTimesheet extends Component
                     }
                     $ip = $this->getUserIpAddr();
                     $location = $this->check_location($ip);
-                    $note = $find_timesheets->note. "&Edit(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. "), ".$note.".";
-                    $result = $find_timesheets->update([
+                    $note = $note."&Add(by: ".Auth::user()->email." | Time: ".now()." | ".$location['note']. ").";
+
+                    $result = Timesheet::create([
+                        'employee_id' => $this->employee_id,
                         'shift_id' => $this->shift_id,
                         'check_in' => $this->check_in,
                         'check_out' => $this->check_out,
                         'hour' => $hour,
-                        'status' => 1,
-                        'note' => $note,
-                        'late' => $time_late
+                        'late' => $time_late,
+                        'location' => $location['location'],
+                        'note' => $this->note."".$note,
+                        'status' => 1
                     ]);
 
-                    if ($result == true) {
-                        $this->dispatchBrowserEvent('hide_editTimeSheetsModal',['message'=> 'Đã sửa thành công']);
+                    if ( $result == true ) {
+                        $this->dispatchBrowserEvent('noti',['message'=> 'Đã thêm thành công']);
                     }else{
                         $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có lỗi xảy ra!']);
                     }
                 }else{
-                    $this->dispatchBrowserEvent('noti-error',['message'=> 'Ca làm việc và thời gian check in không hợp lệ']);
+                    $this->dispatchBrowserEvent('noti-error',['message'=> 'Đã có dữ liệu!']);
                 }
             }else{
-                $this->dispatchBrowserEvent('noti-error',['message'=> 'Tối đa 12 tiếng!']);
+                $this->dispatchBrowserEvent('noti-error',['message'=> 'Ca làm việc và thời gian check in không hợp lệ']);
             }
+        }else{
+            $this->dispatchBrowserEvent('noti-error',['message'=> 'Tối đa 12 tiếng!']);
         }
     }
 
@@ -99,7 +107,7 @@ class EditTimesheet extends Component
         $note = "";
         $location = "[]";
         try {
-            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}?token=".config('app.token_ip')));
+            $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}?token=88cb82c6b0ea8d"));
             $location = $details->loc;
             $note = "IP: ".$details->ip." | City: ".$details->city.", ".$details->region.", loc: [".$details->loc."]";
         } catch(\Exception $error) {
@@ -125,16 +133,17 @@ class EditTimesheet extends Component
         else
             $ipaddress = 'UNKNOWN';
         return $ipaddress;
-    }
+     }
 
-    public function check_later($start, $shift_checkin){
+    public function check_later($start, $shift_checkin)
+    {
         $note = "";
         $hour = 0;
         $minutes = 0;
         $hour =  $start->diffInHours($shift_checkin);
         $minutes =  $start->diffInMinutes($shift_checkin);
         if($hour>0){
-            $note = "Đi muộn sau ". $hour. " giờ ". $minutes. " phút. ";
+            $note = "Đi muộn sau ". $hour. "giờ ". $minutes. " phút. ";
             $minutes = $minutes + ($hour*60);
         }elseif($minutes>=1){
             $note = "Đi muộn sau ". $minutes. " phút. ";

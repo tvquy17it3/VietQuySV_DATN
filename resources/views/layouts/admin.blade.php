@@ -63,6 +63,7 @@
                       <li><a href="{{ route('admin.create-employee') }}">Thêm nhân viên</a></li>
                       <li><a href="{{ route('admin.change-shifts') }}">Thời gian</a></li>
                       <li><a href="{{ route('admin.change_location') }}">Vị trí</a></li>
+                      <li><a href="{{ route('admin.history') }}">Lịch sử</a></li>
                     </ul>
                   </li>
                   <li><a><i class="fa fa-clone"></i>Tài khoản <span class="fa fa-chevron-down"></span></a>

@@ -63,4 +63,24 @@ class TimesheetController extends Controller
     {
         return View('admin.timesheets.today');
     }
+
+    public function timesheet_month()
+    {
+        return View('admin.timesheets.month');
+    }
+
+    public function history()
+    {
+        $timesheets =  Timesheet::with(['employee','employee.user'])
+        ->onlyTrashed()
+        ->orderBy('created_at', 'ASC')
+        ->simplePaginate(10);
+
+        return view('admin.history',['timesheets' => $timesheets]);
+    }
+
+    public function add_new()
+    {
+        return View('admin.timesheets.addnew');
+    }
 }

@@ -15,11 +15,12 @@
     </div>
   </div>
   <div class="clearfix"></div>
-  <div class="col-md-12 col-sm-12  ">
+  <div class="col-md-12 col-sm-12">
     <div class="x_panel">
       <div class="x_title">
         <h2><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newTimeSheetsModal" wire:click="reset_att">Thêm</button> </h2>
-        <h2><a href="{{ route('admin.timesheet-today') }}" class="btn btn-info">Xem hôm nay</a>&nbsp;</h2>
+        <h2><a href="{{ route('admin.timesheet-today') }}" class="btn btn-info">Xem ngày</a>&nbsp;</h2>
+        <h2><a href="{{ route('admin.timesheet-month') }}" class="btn btn-info">Xem tháng</a>&nbsp;</h2>
         <ul class="nav navbar-right panel_toolbox">
           <li style="margin-right: 10px;">
             <input type="date" value="{{ $date_from }}" class="form-control" wire:model="date_from">
@@ -118,7 +119,7 @@
           <div class="modal-body">
             <div class="form-group">
               <div>
-                <input class="form-control" type="text" placeholder="Search Employee..." wire:model="input_search" list="employees"/>
+                <input class="form-control" type="text" placeholder="Search" wire:model="input_search" list="employees"/>
                 <datalist id="employees" required='required'>
                     @foreach ($data_search as $item1)
                       <option value="{{ $item1->user->email }}">{{$item1->user->name." | ".$item1->phone}}</option>

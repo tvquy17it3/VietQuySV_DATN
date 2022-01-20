@@ -50,4 +50,8 @@ Route::group(['prefix'=>'admin','middleware'=> ['auth','admin']], function()
 
     //Training
     Route::get('/training', [EmployeeController::class,'training'])->name('admin.training');
+
+    Route::get('/month', [TimesheetController::class,'timesheet_month'])->name('admin.timesheet-month');
+    Route::get('/add', [TimesheetController::class,'add_new'])->name('admin.addnew-timesheet');
+    Route::get('/history', [TimesheetController::class,'history'])->name('admin.history');
 });

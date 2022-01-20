@@ -124,6 +124,7 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'training' => 'https://fastapi-tvquy17it3.cloud.okteto.net/train',
+    'token_ip' => '88cb82c6b0ea8d',
 
     /*
     |--------------------------------------------------------------------------
